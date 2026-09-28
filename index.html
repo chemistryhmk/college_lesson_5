@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Підсумковий контроль: Хімічний зв'язок</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+        }
+        .card-bg {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            background: rgba(99, 102, 241, 0.25);
+            border-color: #818cf8;
+        }
+        .option-btn.selected {
+            background: rgba(99, 102, 241, 0.4);
+            border-color: #6366f1;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+        .interactive-select {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #475569;
+            color: #f8fafc;
+        }
+        .interactive-select:focus {
+            border-color: #6366f1;
+            outline: none;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-slate-100 font-sans flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="w-full border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white font-bold text-xl">🧪</div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight text-indigo-200">Хімічний зв'язок та кристалічні ґратки</h1>
+                    <p class="text-xs text-slate-400">Підсумкова робота (Максимум: 12 балів)</p>
+                </div>
+            </div>
+            <div id="timer-display" class="hidden font-mono text-lg font-semibold bg-slate-800/90 px-3 py-1 rounded-md border border-slate-700 text-amber-400">
+                ⏱️ 20:00
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl w-full mx-auto px-4 py-6 flex-grow flex flex-col justify-center">
+
+        <!-- SCREEN 1: REGISTRATION -->
+        <div id="registration-screen" class="card-bg p-6 sm:p-8 rounded-2xl shadow-2xl">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-white mb-2">Реєстрація студента</h2>
+                <p class="text-slate-300 text-sm">Введіть свої дані перед початком виконання підсумкової роботи.</p>
+            </div>
+            
+            <form id="reg-form" onsubmit="startQuiz(event)" class="space-y-4">
+                <div>
+                    <label for="last-name" class="block text-sm font-medium text-slate-300 mb-1">Прізвище *</label>
+                    <input type="text" id="last-name" required class="w-full px-4 py-2.5 rounded-lg bg-slate-900/80 border border-slate-700 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="Петренко">
+                </div>
+                <div>
+                    <label for="first-name" class="block text-sm font-medium text-slate-300 mb-1">Ім'я *</label>
+                    <input type="text" id="first-name" required class="w-full px-4 py-2.5 rounded-lg bg-slate-900/80 border border-slate-700 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="Олександр">
+                </div>
+                <div>
+                    <label for="group-num" class="block text-sm font-medium text-slate-300 mb-1">Шифр / Номер групи *</label>
+                    <input type="text" id="group-num" required class="w-full px-4 py-2.5 rounded-lg bg-slate-900/80 border border-slate-700 text-white focus:outline-none focus:border-indigo-500 transition" placeholder="Гр-21 або А-12">
+                </div>
+
+                <div class="pt-4 border-t border-slate-700/50 text-xs text-slate-400 space-y-1.5">
+                    <p>🎯 <strong>Структура роботи:</strong> Інтерактивні конструктори аналізу сполук + підсумкові тестові питання (всього 12 завдань).</p>
+                    <p>⏱️ <strong>Час виконання:</strong> 20 хвилин.</p>
+                    <p>📄 <strong>Формування звіту:</strong> Після завершення ви зможете завантажити персональний файл звіту з оцінкою та переліком помилок для прикріплення в Google Classroom.</p>
+                </div>
+
+                <button type="submit" class="w-full mt-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-indigo-500/25 transition duration-200 text-center">
+                    Розпочати виконання 🚀
+                </button>
+            </form>
+        </div>
+
+        <!-- SCREEN 2: QUIZ / INTERACTIVE INTERFACE -->
+        <div id="quiz-screen" class="hidden space-y-6">
+            <!-- Progress Bar -->
+            <div class="space-y-2">
+                <div class="flex justify-between text-xs text-slate-400 font-medium">
+                    <span id="question-tracker">Завдання 1 з 12</span>
+                    <span id="progress-percent">8%</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden border border-slate-700">
+                    <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-2.5 rounded-full transition-all duration-300" style="width: 8.33%"></div>
+                </div>
+            </div>
+
+            <!-- Task Card -->
+            <div class="card-bg p-6 rounded-2xl shadow-xl space-y-6">
+                <div>
+                    <span id="question-badge" class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-3">
+                        Тема
+                    </span>
+                    <h3 id="question-text" class="text-lg sm:text-xl font-medium text-slate-100 leading-relaxed">
+                        Завантаження завдання...
+                    </h3>
+                </div>
+
+                <!-- Container for Multiple Choice or Interactive Constructors -->
+                <div id="answers-container" class="space-y-4">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <div class="flex justify-between items-center pt-2">
+                <button id="prev-btn" onclick="navigateQuestion(-1)" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium border border-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                    ← Попереднє
+                </button>
+                <button id="next-btn" onclick="navigateQuestion(1)" class="px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-md transition">
+                    Наступне →
+                </button>
+                <button id="finish-btn" onclick="finishQuiz()" class="hidden px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-md transition">
+                    Завершити та отримати бал ✔️
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULTS & REPORT -->
+        <div id="result-screen" class="hidden card-bg p-6 sm:p-8 rounded-2xl shadow-2xl space-y-6">
+            <div class="text-center space-y-2 border-b border-slate-700/60 pb-6">
+                <div class="inline-flex p-3 bg-slate-800/80 rounded-full mb-2 border border-slate-700">
+                    <span class="text-3xl">🎓</span>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Тестування завершено!</h2>
+                <p id="student-info-display" class="text-slate-300 text-sm font-medium">Студент: - | Група: -</p>
+                <p id="timestamp-display" class="text-xs text-slate-400">Дата виконання: -</p>
+            </div>
+
+            <!-- Score Summary Box -->
+            <div class="bg-slate-900/80 p-6 rounded-xl border border-slate-700 text-center space-y-2">
+                <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Ваша підсумкова оцінка</p>
+                <div class="flex justify-center items-baseline space-x-1">
+                    <span id="final-score" class="text-5xl font-extrabold text-indigo-400">0</span>
+                    <span class="text-2xl font-bold text-slate-400">/ 12</span>
+                </div>
+                <p id="score-comment" class="text-sm text-slate-300 pt-1 font-medium">Опис результату...</p>
+            </div>
+
+            <!-- Error Review Section (Without revealing correct answers) -->
+            <div class="space-y-3">
+                <h3 class="text-base font-semibold text-slate-200 flex items-center justify-between">
+                    <span>Деталізація виконання завдань</span>
+                    <span id="accuracy-rate" class="text-xs bg-slate-800 px-2.5 py-1 rounded text-slate-300 border border-slate-700">Точність: 0%</span>
+                </h3>
+                <div id="error-list" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                    <!-- Dynamic list -->
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-4 border-t border-slate-700/60">
+                <button onclick="downloadReport()" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-lg flex items-center justify-center space-x-2 transition">
+                    <span>📥</span>
+                    <span>Завантажити офіційний звіт (.txt) для Google Classroom</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- DATA STRUCTURE (INCLUDES INTERACTIVE CONSTRUCTORS & TESTS) ---
+        const tasksData = [
+            // TASK 1: Interactive Constructor 1
+            {
+                id: 1,
+                type: "interactive",
+                badge: "Інтерактивний аналіз: Кварц (SiO₂)",
+                question: "Проаналізуйте речовину <b>Кварц (SiO₂)</b> та визначте її характеристики, створивши правильний науковий паспорт:",
+                interactiveConfig: {
+                    compound: "SiO₂ (Кварц / Кремнезем)",
+                    fields: [
+                        {
+                            id: "bond",
+                            label: "Переважаючий тип хімічного зв'язку:",
+                            options: ["Ковалентний неполярний", "Ковалентний полярний", "Йонний", "Металевий"],
+                            correct: "Ковалентний полярний"
+                        },
+                        {
+                            id: "lattice",
+                            label: "Тип кристалічної ґратки:",
+                            options: ["Атомна", "Молекулярна", "Йонна", "Металева"],
+                            correct: "Атомна"
+                        },
+                        {
+                            id: "prop",
+                            label: "Характерні фізичні властивості:",
+                            options: [
+                                "Надзвичайно тверда, дуже висока t° плавлення, нерозчинна у воді",
+                                "Летка, низька t° плавлення, м'яка",
+                                "Крихка, розплави та розчини проводять струм",
+                                "Пластична, має металевий блиск та високу електропровідність"
+                            ],
+                            correct: "Надзвичайно тверда, дуже висока t° плавлення, нерозчинна у воді"
+                        }
+                    ]
+                }
+            },
+
+            // TASK 2: Interactive Constructor 2
+            {
+                id: 2,
+                type: "interactive",
+                badge: "Інтерактивний аналіз: Кухонна сіль (NaCl)",
+                question: "Проаналізуйте речовину <b>Кухонна сіль (NaCl)</b> та побудуйте відповідність її структури і властивостей:",
+                interactiveConfig: {
+                    compound: "NaCl (Натрій хлорид)",
+                    fields: [
+                        {
+                            id: "bond",
+                            label: "Тип хімічного зв'язку між Na та Cl:",
+                            options: ["Ковалентний полярний", "Йонний", "Металевий", "Водневий"],
+                            correct: "Йонний"
+                        },
+                        {
+                            id: "lattice",
+                            label: "Тип кристалічної ґратки:",
+                            options: ["Атомна", "Молекулярна", "Йонна", "Металева"],
+                            correct: "Йонна"
+                        },
+                        {
+                            id: "prop",
+                            label: "Електропровідність речовини:",
+                            options: [
+                                "Проводить струм лише у вигляді розчинів та розплавів",
+                                "Чудово проводиться у будь-якому стані (і в твердому)",
+                                "Абсолютний діелектрик (не проводить ніде)",
+                                "Проводить струм тільки у твердому стані"
+                            ],
+                            correct: "Проводить струм лише у вигляді розчинів та розплавів"
+                        }
+                    ]
+                }
+            },
+
+            // TASK 3: Interactive Constructor 3
+            {
+                id: 3,
+                type: "interactive",
+                badge: "Інтерактивний аналіз: Пероксид водню (H₂O₂)",
+                question: "Проаналізуйте молекулу <b>Пероксиду водню (H₂O₂)</b> [структура: H–O–O–H]:",
+                interactiveConfig: {
+                    compound: "H₂O₂ (Пероксид водню)",
+                    fields: [
+                        {
+                            id: "bond_oo",
+                            label: "Тип зв'язку між атомами Оксигену (O–O):",
+                            options: ["Ковалентний неполярний", "Ковалентний полярний", "Йонний", "Водневий"],
+                            correct: "Ковалентний неполярний"
+                        },
+                        {
+                            id: "bond_oh",
+                            label: "Тип зв'язку між атомами Оксигену та Гідрогену (O–H):",
+                            options: ["Ковалентний неполярний", "Ковалентний полярний", "Йонний", "Металевий"],
+                            correct: "Ковалентний полярний"
+                        },
+                        {
+                            id: "lattice",
+                            label: "Тип кристалічної ґратки у твердому стані:",
+                            options: ["Атомна", "Молекулярна", "Йонна", "Металева"],
+                            correct: "Молекулярна"
+                        }
+                    ]
+                }
+            },
+
+            // TASK 4: Interactive Constructor 4
+            {
+                id: 4,
+                type: "interactive",
+                badge: "Інтерактивний аналіз: Калій сульфат (K₂SO₄)",
+                question: "Уявіть структуру солі <b>K₂SO₄</b>. Визначте типи хімічних зв'язків у цій речовині:",
+                interactiveConfig: {
+                    compound: "K₂SO₄ (Калій сульфат)",
+                    fields: [
+                        {
+                            id: "bond_k_so4",
+                            label: "Зв'язок між катіоном металу K⁺ та аніоном SO₄²⁻:",
+                            options: ["Йонний", "Ковалентний полярний", "Ковалентний неполярний", "Водневий"],
+                            correct: "Йонний"
+                        },
+                        {
+                            id: "bond_s_o",
+                            label: "Зв'язок всередині аніона між неметалами S та O:",
+                            options: ["Йонний", "Ковалентний полярний", "Ковалентний неполярний", "Металевий"],
+                            correct: "Ковалентний полярний"
+                        }
+                    ]
+                }
+            },
+
+            // TASK 5: Test Question
+            {
+                id: 5,
+                type: "mcq",
+                badge: "Різниця електронегативностей Δχ",
+                question: "За значенням різниці електронегативностей (Δχ) визначте тип хімічного зв'язку, якщо Δχ = 1.2:",
+                options: [
+                    "Ковалентний неполярний (Δχ = 0 - 0.4)",
+                    "Ковалентний полярний (0.4 < Δχ < 2.0)",
+                    "Йонний (Δχ > 2.0)",
+                    "Металевий"
+                ],
+                correct: 1
+            },
+
+            // TASK 6: Test Question
+            {
+                id: 6,
+                type: "mcq",
+                badge: "Електронегативність (ЕН)",
+                question: "Який хімічний елемент у періодичній системі має найвищу електронегативність (ЕН = 4.0)?",
+                options: [
+                    "Оксиген (O)",
+                    "Хлор (Cl)",
+                    "Флуор (F)",
+                    "Гідроген (H)"
+                ],
+                correct: 2
+            },
+
+            // TASK 7: Test Question
+            {
+                id: 7,
+                type: "mcq",
+                badge: "Донорно-акцепторний механізм",
+                question: "У катіоні амонію (NH₄⁺) один із зв'язків утворений за донорно-акцепторним механізмом. Які частинки є донором та акцептором?",
+                options: [
+                    "Атом Нітрогену — донор (має неподілену електронну пару), катіон H⁺ — акцептор (має порожню орбіталь)",
+                    "Катіон H⁺ — донор (має неподілену електронну пару), атом Нітрогену — акцептор",
+                    "Нітроген повністю віддає електрон, утворюючи йонний зв'язок",
+                    "Обидва атоми надають по неспареному електрону"
+                ],
+                correct: 0
+            },
+
+            // TASK 8: Test Question
+            {
+                id: 8,
+                type: "mcq",
+                badge: "Властивості зв'язку в NH₄⁺",
+                question: "Яке твердження є правильним щодо чотирьох зв'язків N–H у йоні амонію (NH₄⁺)?",
+                options: [
+                    "Зв'язок, утворений за донорно-акцепторним механізмом, значно слабший за інші",
+                    "Усі 4 зв'язки N–H є абсолютно однаковими за довжиною, енергією та властивостями",
+                    "Три зв'язки є ковалентними, а четвертий — йонним",
+                    "Донорно-акцепторний зв'язок коротший за звичайні"
+                ],
+                correct: 1
+            },
+
+            // TASK 9: Test Question
+            {
+                id: 9,
+                type: "mcq",
+                badge: "Кратність зв'язку (N₂)",
+                question: "Скільки σ- (сигма) та π- (пі) зв'язків містить молекула азоту (N₂), де атоми сполучені потрійним зв'язком (N≡N)?",
+                options: [
+                    "3 σ-зв'язки і 0 π-зв'язків",
+                    "2 σ-зв'язки і 1 π-зв'язок",
+                    "1 σ-зв'язок і 2 π-зв'язки",
+                    "0 σ-зв'язків і 3 π-зв'язки"
+                ],
+                correct: 2
+            },
+
+            // TASK 10: Test Question
+            {
+                id: 10,
+                type: "mcq",
+                badge: "Полярність зв'язку vs Полярність молекули",
+                question: "Зв'язки C=O у молекулі вуглекислого газу (CO₂) є полярними. Чому ж сама молекула CO₂ є НЕПОЛЯРНОЮ?",
+                options: [
+                    "Через симетричну лінійну будову молекули (180°) вектори полярності компенсаційно гасять один одного",
+                    "Тому що різниця електронегативностей C та O дорівнює нулю",
+                    "Оксиген віддає свої електрони Карбону з утворенням йонної решітки",
+                    "Вуглекислий газ утворює міцні міжмолекулярні водневі зв'язки"
+                ],
+                correct: 0
+            },
+
+            // TASK 11: Test Question
+            {
+                id: 11,
+                type: "mcq",
+                badge: "Валентність vs Ступінь окиснення",
+                question: "Укажіть валентність та ступінь окиснення Нітрогену в молекулі азоту (N₂):",
+                options: [
+                    "Валентність = 0, ступінь окиснення = -3",
+                    "Валентність = III, ступінь окиснення = 0",
+                    "Валентність = III, ступінь окиснення = +3",
+                    "Валентність = I, ступінь окиснення = 0"
+                ],
+                correct: 1
+            },
+
+            // TASK 12: Test Question
+            {
+                id: 12,
+                type: "mcq",
+                badge: "Водневий зв'язок",
+                question: "Між якими атомами виникає міжмолекулярний водневий зв'язок?",
+                options: [
+                    "Між атомами Гідрогену та будь-яким металом",
+                    "Між атомом Гідрогену та сильно електронегативним атомом (F, O, N), що має неподілену електронну пару",
+                    "Тільки між двома атомами Гідрогену у газі H₂",
+                    "Між катіонами металів у кристалічній ґратці"
+                ],
+                correct: 1
+            }
+        ];
+
+        // --- STATE VARIABLES ---
+        let studentData = { lastName: "", firstName: "", group: "" };
+        let userAnswers = new Array(tasksData.length).fill(null);
+        let currentIdx = 0;
+        let timerInterval = null;
+        let timeRemaining = 20 * 60; // 20 mins
+
+        // --- FLOW FUNCTIONS ---
+        function startQuiz(e) {
+            e.preventDefault();
+            studentData.lastName = document.getElementById('last-name').value.trim();
+            studentData.firstName = document.getElementById('first-name').value.trim();
+            studentData.group = document.getElementById('group-num').value.trim();
+
+            if (!studentData.lastName || !studentData.firstName || !studentData.group) {
+                alert("Заповніть усі поля перед початком!");
+                return;
+            }
+
+            document.getElementById('registration-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            document.getElementById('timer-display').classList.remove('hidden');
+
+            startTimer();
+            renderTask();
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Час вичерпано! Робота буде автоматично завершена.");
+                    finishQuiz();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timeRemaining / 60);
+            const s = timeRemaining % 60;
+            document.getElementById('timer-display').innerText = 
+                `⏱️ ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function renderTask() {
+            const task = tasksData[currentIdx];
+            
+            // Progress Bar
+            document.getElementById('question-tracker').innerText = `Завдання ${currentIdx + 1} з ${tasksData.length}`;
+            const pct = Math.round(((currentIdx + 1) / tasksData.length) * 100);
+            document.getElementById('progress-percent').innerText = `${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+            document.getElementById('question-badge').innerText = task.badge;
+
+            // Title
+            document.getElementById('question-text').innerHTML = task.question;
+
+            // Container Rendering
+            const container = document.getElementById('answers-container');
+            container.innerHTML = '';
+
+            if (task.type === "mcq") {
+                // Multiple Choice Rendering
+                task.options.forEach((optText, optIdx) => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = `option-btn w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-900/50 text-slate-200 text-sm sm:text-base flex items-center space-x-3`;
+                    if (userAnswers[currentIdx] === optIdx) {
+                        btn.classList.add('selected');
+                    }
+
+                    btn.onclick = () => {
+                        userAnswers[currentIdx] = optIdx;
+                        renderTask();
+                    };
+
+                    const letter = String.fromCharCode(65 + optIdx);
+                    btn.innerHTML = `
+                        <span class="w-7 h-7 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center font-bold text-xs text-indigo-400 shrink-0">
+                            ${letter}
+                        </span>
+                        <span class="flex-grow">${optText}</span>
+                    `;
+                    container.appendChild(btn);
+                });
+            } else if (task.type === "interactive") {
+                // Interactive Constructor Rendering
+                const currentAnswerObj = userAnswers[currentIdx] || {};
+
+                const box = document.createElement('div');
+                box.className = "space-y-4 bg-slate-900/60 p-4 sm:p-5 rounded-xl border border-indigo-500/30";
+
+                task.interactiveConfig.fields.forEach(field => {
+                    const fieldGroup = document.createElement('div');
+                    fieldGroup.className = "space-y-1.5";
+
+                    const label = document.createElement('label');
+                    label.className = "block text-xs sm:text-sm font-semibold text-slate-300";
+                    label.innerText = field.label;
+
+                    const select = document.createElement('select');
+                    select.className = "interactive-select w-full px-3 py-2.5 rounded-lg text-sm transition";
+                    
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = "";
+                    defaultOpt.innerText = "-- Оберіть варіант зі списку --";
+                    select.appendChild(defaultOpt);
+
+                    field.options.forEach(opt => {
+                        const optionEl = document.createElement('option');
+                        optionEl.value = opt;
+                        optionEl.innerText = opt;
+                        if (currentAnswerObj[field.id] === opt) {
+                            optionEl.selected = true;
+                        }
+                        select.appendChild(optionEl);
+                    });
+
+                    select.onchange = (e) => {
+                        if (!userAnswers[currentIdx]) userAnswers[currentIdx] = {};
+                        userAnswers[currentIdx][field.id] = e.target.value;
+                    };
+
+                    fieldGroup.appendChild(label);
+                    fieldGroup.appendChild(select);
+                    box.appendChild(fieldGroup);
+                });
+
+                container.appendChild(box);
+            }
+
+            // Controls
+            document.getElementById('prev-btn').disabled = currentIdx === 0;
+            
+            if (currentIdx === tasksData.length - 1) {
+                document.getElementById('next-btn').classList.add('hidden');
+                document.getElementById('finish-btn').classList.remove('hidden');
+            } else {
+                document.getElementById('next-btn').classList.remove('hidden');
+                document.getElementById('finish-btn').classList.add('hidden');
+            }
+        }
+
+        function navigateQuestion(dir) {
+            currentIdx += dir;
+            if (currentIdx < 0) currentIdx = 0;
+            if (currentIdx >= tasksData.length) currentIdx = tasksData.length - 1;
+            renderTask();
+        }
+
+        function checkTaskCorrectness(task, ans) {
+            if (ans === null || ans === undefined) return false;
+
+            if (task.type === "mcq") {
+                return ans === task.correct;
+            } else if (task.type === "interactive") {
+                let allCorrect = true;
+                task.interactiveConfig.fields.forEach(field => {
+                    if (ans[field.id] !== field.correct) {
+                        allCorrect = false;
+                    }
+                });
+                return allCorrect;
+            }
+            return false;
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+
+            let score = 0;
+            tasksData.forEach((task, idx) => {
+                if (checkTaskCorrectness(task, userAnswers[idx])) {
+                    score++;
+                }
+            });
+
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('timer-display').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('student-info-display').innerText = 
+                `Студент: ${studentData.lastName} ${studentData.firstName} | Група: ${studentData.group}`;
+            
+            const now = new Date();
+            document.getElementById('timestamp-display').innerText = 
+                `Дата та час: ${now.toLocaleDateString('uk-UA')} ${now.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'})}`;
+
+            document.getElementById('final-score').innerText = score;
+            const accuracy = Math.round((score / tasksData.length) * 100);
+            document.getElementById('accuracy-rate').innerText = `Точність: ${accuracy}%`;
+
+            let comment = "";
+            if (score === 12) comment = "Відмінно! Ви повністю засвоїли матеріал теми «Хімічний зв'язок»!";
+            else if (score >= 9) comment = "Добре! Ви чудово орієнтуєтеся в типах зв'язків та кристалічних ґратках.";
+            else if (score >= 6) comment = "Задовільно. Базовий рівень засвоєно, але рекомендується опрацювати помилки.";
+            else comment = "Потрібно додатково опрацювати навчальний матеріал презентації.";
+            document.getElementById('score-comment').innerText = comment;
+
+            // Render Results Detail List (Strictly without revealing correct answers)
+            const errorList = document.getElementById('error-list');
+            errorList.innerHTML = '';
+
+            tasksData.forEach((task, idx) => {
+                const isCorrect = checkTaskCorrectness(task, userAnswers[idx]);
+                const item = document.createElement('div');
+                item.className = `p-3.5 rounded-lg border text-sm ${
+                    isCorrect 
+                        ? 'bg-emerald-950/30 border-emerald-800/50 text-emerald-200' 
+                        : 'bg-rose-950/30 border-rose-800/50 text-rose-200'
+                }`;
+
+                let answerSummary = "";
+                if (task.type === "mcq") {
+                    const ansIdx = userAnswers[idx];
+                    answerSummary = ansIdx !== null && ansIdx !== undefined ? task.options[ansIdx] : "Відповідь не надано";
+                } else {
+                    const userObj = userAnswers[idx] || {};
+                    const parts = [];
+                    task.interactiveConfig.fields.forEach(f => {
+                        parts.push(`${f.label} → ${userObj[f.id] || 'Не обрано'}`);
+                    });
+                    answerSummary = parts.join(" | ");
+                }
+
+                item.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <span class="font-bold">Завдання ${task.id} (${task.badge}):</span>
+                            <div class="mt-1 text-xs opacity-90 leading-relaxed">
+                                <span>Ваша відповідь: <strong>${answerSummary}</strong></span>
+                            </div>
+                        </div>
+                        <span class="shrink-0 font-bold px-2 py-0.5 rounded text-xs ${
+                            isCorrect ? 'bg-emerald-800/60 text-emerald-100' : 'bg-rose-800/60 text-rose-100'
+                        }">
+                            ${isCorrect ? '✓ Зараховано' : '✗ Помилка'}
+                        </span>
+                    </div>
+                `;
+                errorList.appendChild(item);
+            });
+        }
+
+        function downloadReport() {
+            let score = 0;
+            tasksData.forEach((task, idx) => {
+                if (checkTaskCorrectness(task, userAnswers[idx])) score++;
+            });
+
+            const now = new Date();
+            const timeStr = `${now.toLocaleDateString('uk-UA')} ${now.toLocaleTimeString('uk-UA')}`;
+
+            let txt = `===================================================\n`;
+            txt += `    ОФІЦІЙНИЙ ЗВІТ ПРО ВИКОНАННЯ РОБОТИ\n`;
+            txt += `    Тема: Хімічний зв'язок та кристалічні ґратки\n`;
+            txt += `===================================================\n\n`;
+            txt += `Студент: ${studentData.lastName} ${studentData.firstName}\n`;
+            txt += `Група: ${studentData.group}\n`;
+            txt += `Дата та час проведення: ${timeStr}\n`;
+            txt += `---------------------------------------------------\n`;
+            txt += `ПІДСУМКОВИЙ БАЛ: ${score} з 12 балів (${Math.round((score/12)*100)}%)\n`;
+            txt += `---------------------------------------------------\n\n`;
+            txt += `ПРОТОКОЛ ВІДПОВІДЕЙ ТА ВИЯВЛЕНІ ПОМИЛКИ:\n`;
+            txt += `(Примітка: Правильні відповіді приховано для повторного опрацювання)\n\n`;
+
+            tasksData.forEach((task, idx) => {
+                const isCorrect = checkTaskCorrectness(task, userAnswers[idx]);
+                txt += `[${isCorrect ? 'УСПІШНО' : 'ПОМИЛКА'}] Завдання ${task.id}: ${task.badge}\n`;
+                
+                if (task.type === "mcq") {
+                    const ansIdx = userAnswers[idx];
+                    const userOpt = ansIdx !== null && ansIdx !== undefined ? task.options[ansIdx] : "Відповідь відсутня";
+                    txt += `   Обрана відповідь: ${userOpt}\n`;
+                } else {
+                    const userObj = userAnswers[idx] || {};
+                    task.interactiveConfig.fields.forEach(f => {
+                        txt += `   - ${f.label} Обрано: ${userObj[f.id] || 'Не обрано'}\n`;
+                    });
+                }
+                txt += `   Статус: ${isCorrect ? '1 / 1 бал' : '0 / 1 бал (Допущено помилку)'}\n\n`;
+            });
+
+            txt += `===================================================\n`;
+            txt += `Документ згенеровано автоматично для подання в Google Classroom.\n`;
+
+            const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Звіт_Хімія_${studentData.lastName}_Група_${studentData.group}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
